@@ -1,0 +1,316 @@
+/**
+ * FACT-FORCING GATE CONTEXT:
+ * 1. Importers/Callers: `src/components/layout/Header.tsx`, `src/components/layout/MobileDrawer.tsx`, `src/app/admin/layout.tsx`.
+ * 2. Affected APIs: `SystemAccountsModal` default export component.
+ * 3. Schemas: `AccountInfo` (role, name, email, defaultPass, icon, color, highlight).
+ * 4. Verbatim User Instruction: "và các tài khoản demo III. Bảng Danh Mục Tài Khoản & Mật Khẩu Nghiệp Vụ Tất cả tài khoản sử dụng mật khẩu mặc định: 123456... --- vô sẽ ko yêu cầu đổi mk nữa".
+ */
+
+"use client";
+
+import { useState } from "react";
+import { KeyRound, Eye, EyeOff, Copy, Check, X, Shield, Building2, User, BookOpen, Crown, GraduationCap, Calculator, Users, MapPin } from "lucide-react";
+
+interface AccountInfo {
+  role: string;
+  name: string;
+  email: string;
+  defaultPass: string;
+  icon: any;
+  color: string;
+  highlight?: boolean;
+}
+
+const accountsList: AccountInfo[] = [
+  {
+    role: "SuperAdmin Toàn Quốc",
+    name: "Quản trị viên Quốc gia (Bộ GD&ĐT)",
+    email: "superadmin.vietnam@gmail.com",
+    defaultPass: "123456",
+    icon: Crown,
+    color: "bg-amber-100 border-amber-300 text-amber-900",
+    highlight: true,
+  },
+  {
+    role: "Sở GD&ĐT Tỉnh Lào Cai",
+    name: "Lãnh đạo Sở GD&ĐT (Bà Dương Bích Nguyệt)",
+    email: "admin.sogd.laocai@gmail.com",
+    defaultPass: "123456",
+    icon: Building2,
+    color: "bg-purple-100 border-purple-300 text-purple-900",
+    highlight: true,
+  },
+  {
+    role: "Phòng GD&ĐT Huyện Bảo Thắng",
+    name: "Lãnh đạo Phòng GD&ĐT (ThS. Bùi Thị Hải Vân)",
+    email: "gd.baothang@gmail.com",
+    defaultPass: "123456",
+    icon: Building2,
+    color: "bg-rose-100 border-rose-300 text-rose-900",
+    highlight: true,
+  },
+  {
+    role: "UBND Xã Bảo Thắng",
+    name: "Cán bộ Giáo dục Xã / Chủ tịch UBND",
+    email: "ubnd.baothang@gmail.com",
+    defaultPass: "123456",
+    icon: Building2,
+    color: "bg-rose-100 border-rose-300 text-rose-900",
+  },
+  {
+    role: "Hiệu trưởng Toàn trường",
+    name: "ThS. Trần Thị Thanh Hà",
+    email: "hieutruong.thpholu@gmail.com",
+    defaultPass: "123456",
+    icon: Shield,
+    color: "bg-indigo-100 border-indigo-300 text-indigo-900",
+    highlight: true,
+  },
+  {
+    role: "Kế toán trưởng",
+    name: "Nguyễn Thị Phương Mai",
+    email: "ketoan.thpholu@gmail.com",
+    defaultPass: "123456",
+    icon: Calculator,
+    color: "bg-orange-100 border-orange-300 text-orange-900",
+  },
+  {
+    role: "PHT Điểm Trung tâm",
+    name: "ThS. Nguyễn Văn Trung (Quản lý 20 lớp)",
+    email: "pht.trungtam@gmail.com",
+    defaultPass: "123456",
+    icon: Building2,
+    color: "bg-teal-100 border-teal-300 text-teal-900",
+  },
+  {
+    role: "PHT Phân hiệu Sơn Hà 1",
+    name: "Thầy Nguyễn Văn Sơn (Quản lý 12 lớp)",
+    email: "pht.sonha1@gmail.com",
+    defaultPass: "123456",
+    icon: MapPin,
+    color: "bg-teal-100 border-teal-300 text-teal-900",
+  },
+  {
+    role: "PHT Phân hiệu Sơn Hà 2",
+    name: "Cô Hoàng Thị Hà (Quản lý 10 lớp)",
+    email: "pht.sonha2@gmail.com",
+    defaultPass: "123456",
+    icon: MapPin,
+    color: "bg-teal-100 border-teal-300 text-teal-900",
+  },
+  {
+    role: "PHT Phân hiệu Sơn Hải",
+    name: "Thầy Lê Văn Hải (Quản lý 10 lớp)",
+    email: "pht.sonhai@gmail.com",
+    defaultPass: "123456",
+    icon: MapPin,
+    color: "bg-teal-100 border-teal-300 text-teal-900",
+  },
+  {
+    role: "PHT Phân hiệu Phố Lu 3",
+    name: "Cô Đặng Thị Lu (Quản lý 8 lớp)",
+    email: "pht.pholu3@gmail.com",
+    defaultPass: "123456",
+    icon: MapPin,
+    color: "bg-teal-100 border-teal-300 text-teal-900",
+  },
+  {
+    role: "PHT Điểm lẻ An Tiến",
+    name: "Thầy Phạm Văn Tiến (Quản lý 2 lớp ghép)",
+    email: "pht.antien@gmail.com",
+    defaultPass: "123456",
+    icon: MapPin,
+    color: "bg-teal-100 border-teal-300 text-teal-900",
+  },
+  {
+    role: "Tổ trưởng Chuyên môn K1",
+    name: "Cô Vũ Thị Hoa (Khối 1)",
+    email: "to.khoi1@gmail.com",
+    defaultPass: "123456",
+    icon: Users,
+    color: "bg-cyan-100 border-cyan-300 text-cyan-900",
+  },
+  {
+    role: "Tổ trưởng Tổ Đặc thù",
+    name: "Cô Đào Thị Linh (Tiếng Anh, Tin, MT, AN)",
+    email: "to.dacthu@gmail.com",
+    defaultPass: "123456",
+    icon: Users,
+    color: "bg-cyan-100 border-cyan-300 text-cyan-900",
+  },
+  {
+    role: "Giáo viên Tiểu học mẫu",
+    name: "Cô Nguyễn Thu Hằng (GVCN 1A1)",
+    email: "giaovien.thpholu@gmail.com",
+    defaultPass: "123456",
+    icon: BookOpen,
+    color: "bg-emerald-100 border-emerald-300 text-emerald-900",
+    highlight: true,
+  },
+  {
+    role: "Học sinh Tiểu học mẫu",
+    name: "Nguyễn Minh Khang (Lớp 1A1)",
+    email: "hocsinh.thpholu@gmail.com",
+    defaultPass: "123456",
+    icon: GraduationCap,
+    color: "bg-blue-100 border-blue-300 text-blue-900",
+    highlight: true,
+  },
+];
+
+interface SystemAccountsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function SystemAccountsModal({ isOpen, onClose }: SystemAccountsModalProps) {
+  // Show passwords by default for all demo accounts
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>(() => {
+    const initialMap: Record<string, boolean> = {};
+    accountsList.forEach((acc) => {
+      initialMap[acc.email] = true;
+    });
+    return initialMap;
+  });
+
+  const [showAll, setShowAll] = useState<boolean>(true);
+  const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
+
+  if (!isOpen) return null;
+
+  const toggleShowPassword = (email: string) => {
+    setShowPasswords((prev) => ({ ...prev, [email]: !prev[email] }));
+  };
+
+  const toggleShowAll = () => {
+    const nextVal = !showAll;
+    setShowAll(nextVal);
+    const updated: Record<string, boolean> = {};
+    accountsList.forEach((acc) => {
+      updated[acc.email] = nextVal;
+    });
+    setShowPasswords(updated);
+  };
+
+  const copyToClipboard = (text: string, email: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedEmail(email);
+    setTimeout(() => setCopiedEmail(null), 2000);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 text-amber-800 flex items-center justify-center">
+              <KeyRound className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-900">Danh Sách Tài Khoản & Mật Khẩu Đăng Nhập</h2>
+              <p className="text-xs text-slate-500">Mật khẩu khởi tạo mặc định cho tất cả tài khoản là <strong className="font-mono text-amber-800 font-bold">123456</strong></p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Đóng danh sách tài khoản"
+            className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Global actions bar */}
+        <div className="flex items-center justify-between pt-3 pb-1 shrink-0">
+          <span className="text-xs font-semibold text-slate-600">Hiển thị mật khẩu tài khoản Demo:</span>
+          <button
+            onClick={toggleShowAll}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 transition cursor-pointer"
+          >
+            {showAll ? <EyeOff className="w-3.5 h-3.5 text-slate-500" /> : <Eye className="w-3.5 h-3.5 text-indigo-600" />}
+            <span>{showAll ? "Ẩn tất cả" : "Hiện tất cả mật khẩu"}</span>
+          </button>
+        </div>
+
+        <div className="overflow-y-auto py-2 space-y-3 flex-1 pr-1">
+          {accountsList.map((acc) => {
+            const Icon = acc.icon;
+            const isShown = showPasswords[acc.email] ?? showAll;
+            return (
+              <div
+                key={acc.email}
+                className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                  acc.highlight
+                    ? "border-amber-300/80 bg-amber-50/40 hover:bg-amber-50/70 hover:shadow-md"
+                    : "border-slate-200/80 bg-slate-50/50 hover:bg-white hover:shadow-md"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${acc.color}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold border uppercase tracking-wider ${acc.color}`}>
+                        {acc.role}
+                      </span>
+                      {acc.highlight && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-200 text-amber-900 border border-amber-300">
+                          Tài khoản Mẫu
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs font-bold text-slate-900 mt-1">{acc.name}</p>
+                    <p className="text-xs font-mono text-slate-600">{acc.email}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60 justify-between sm:justify-end">
+                  <div className="relative flex items-center bg-white px-3 py-1.5 rounded-xl border border-slate-300 min-w-[130px] justify-between">
+                    <span className="text-xs font-mono font-bold text-slate-800">
+                      {isShown ? acc.defaultPass : "••••••••"}
+                    </span>
+                    <button
+                      onClick={() => toggleShowPassword(acc.email)}
+                      className="ml-2 text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                      title={isShown ? "Ẩn mật khẩu" : "Hiển thị mật khẩu"}
+                    >
+                      {isShown ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => copyToClipboard(`Email: ${acc.email} | Pass: ${acc.defaultPass}`, acc.email)}
+                    className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-indigo-600 transition cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                    title="Sao chép thông tin đăng nhập"
+                  >
+                    {copiedEmail === acc.email ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-emerald-600 text-[11px]">Đã chép</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span className="text-[11px]">Sao chép</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="pt-4 border-t border-slate-100 flex justify-end shrink-0">
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer"
+          >
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
