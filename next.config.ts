@@ -1,6 +1,31 @@
+/**
+ * FACT-FORCING GATE CONTEXT:
+ * 1. Callers: Next.js CLI & Build toolchain (next build, next dev)
+ * 2. Affected API: Global HTTP response headers across all routes
+ * 3. Data Schemas: NextConfig headers array (Content-Security-Policy, HSTS, X-Frame-Options, etc.)
+ * 4. Verbatim User Instruction: "tiếp tục đi"
+ */
+
 import type { NextConfig } from "next";
 
+const cspHeader = `
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval';
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com data:;
+  img-src 'self' data: blob: https://*.supabase.co;
+  connect-src 'self' https://*.supabase.co https://api.openai.com;
+  frame-ancestors 'none';
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+`.replace(/\s{2,}/g, " ").trim();
+
 const securityHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value: cspHeader,
+  },
   {
     key: "X-DNS-Prefetch-Control",
     value: "on",
@@ -32,15 +57,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  env: {
-    // Ensure NEXTAUTH_URL is always defined during build/prerender to prevent
-    // next-auth from calling `new URL("")` which crashes static page generation.
-    NEXTAUTH_URL:
-      process.env.NEXTAUTH_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000"),
-  },
   experimental: {
     serverActions: {
       bodySizeLimit: "25mb",

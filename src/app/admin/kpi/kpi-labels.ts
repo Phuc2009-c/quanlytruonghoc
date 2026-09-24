@@ -1,3 +1,11 @@
+/**
+ * FACT-FORCING GATE CONTEXT:
+ * 1. Importers/Callers: KPI admin pages (catalog, entry, approval, principal-dashboard)
+ * 2. Affected API: CATEGORY_LABELS, DIRECTION_LABELS, FREQUENCY_LABELS, STATUS_LABELS
+ * 3. Data schemas: KpiPeriodStatus, KpiCategory, MeasurementDirection, ReportingFrequency
+ * 4. Verbatim User Instruction: "cần 1 chút màu để cảnh báo kpi" -> "theo khuyến nghị của bạn" -> "thực hiện đi" (Chuẩn hóa màu cảnh báo ngữ nghĩa Traffic Light trên nền tảng Slate)
+ */
+
 import type { KpiCategory, MeasurementDirection, ReportingFrequency, KpiPeriodStatus } from "@prisma/client";
 
 export const CATEGORY_LABELS: Record<KpiCategory, string> = {
@@ -22,6 +30,7 @@ export const DIRECTION_LABELS: Record<MeasurementDirection, string> = {
 };
 
 export const FREQUENCY_LABELS: Record<ReportingFrequency, string> = {
+  DAILY: "Hàng ngày",
   MONTHLY: "Hàng tháng",
   QUARTERLY: "Hàng quý",
   SEMESTER: "Theo học kỳ",
@@ -30,9 +39,9 @@ export const FREQUENCY_LABELS: Record<ReportingFrequency, string> = {
 
 export const STATUS_LABELS: Record<KpiPeriodStatus, { label: string; class: string }> = {
   DRAFT: { label: "Bản nháp", class: "bg-slate-100 text-slate-700 border-slate-200" },
-  SUBMITTED: { label: "Đã gửi duyệt (Cấp Phân hiệu)", class: "bg-blue-50 text-blue-700 border-blue-200" },
-  CAMPUS_CHECKED: { label: "Đã thẩm định Phân hiệu", class: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-  VP_REVIEWED: { label: "Hiệu phó đã thông qua", class: "bg-purple-50 text-purple-700 border-purple-200" },
-  APPROVED: { label: "Hiệu trưởng đã phê duyệt (Đã khóa)", class: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  UNLOCK_REQUESTED: { label: "Đang chờ mở khóa", class: "bg-amber-50 text-amber-700 border-amber-200" },
+  SUBMITTED: { label: "Đã gửi duyệt (Cấp Phân hiệu)", class: "bg-blue-50 text-blue-800 border-blue-200" },
+  CAMPUS_CHECKED: { label: "Đã thẩm định Phân hiệu", class: "bg-indigo-50 text-indigo-800 border-indigo-200" },
+  VP_REVIEWED: { label: "Hiệu phó đã thông qua", class: "bg-amber-50 text-amber-800 border-amber-200" },
+  APPROVED: { label: "Hiệu trưởng đã phê duyệt (Đã khóa)", class: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  UNLOCK_REQUESTED: { label: "Đang chờ mở khóa", class: "bg-rose-50 text-rose-800 border-rose-200" },
 };

@@ -41,6 +41,7 @@ import {
   ShieldCheck,
   Activity,
   Globe,
+  Trophy,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getCurrentAdminProfile, AdminProfile } from "./actions";
@@ -79,6 +80,8 @@ const superAdminMenuGroups: MenuGroup[] = [
     icon: Activity,
     items: [
       { label: "Bảng chỉ huy Toàn nền tảng", href: "/admin/dashboard", icon: LayoutDashboard },
+      { label: "Giám sát KPI Toàn Mạng Lưới", href: "/admin/kpi/principal-dashboard", icon: Target, badge: "KPI" },
+      { label: "Bảng vàng Thi đua Nề nếp", href: "/admin/emulation", icon: Trophy, badge: "Thi Đua" },
       { label: "Radar cảnh báo rủi ro AI", href: "/admin/early-warnings", icon: AlertCircle, badge: "AI" },
       { label: "Điểm thi & Hành trình OLS", href: "/admin/exam-analytics", icon: BarChart2, badge: "AI OLS" },
       { label: "Báo cáo điều hành tổng hợp", href: "/admin/daily-reports", icon: FileText },
@@ -129,6 +132,7 @@ const superAdminMenuGroups: MenuGroup[] = [
     icon: ShieldCheck,
     items: [
       { label: "Trung tâm Phê duyệt Cấp cao", href: "/admin/approvals", icon: CheckSquare },
+      { label: "Danh mục & Quản lý KPI", href: "/admin/kpi", icon: ClipboardList },
       { label: "Khóa sổ dữ liệu & Cổng thi", href: "/admin/data-lock", icon: ShieldCheck },
       { label: "Học bạ số & CSDL Quốc gia", href: "/admin/transcripts", icon: FileSpreadsheet },
       { label: "Thiết bị số & Cơ sở vật chất", href: "/admin/equipment", icon: Building2 },
@@ -149,6 +153,8 @@ const principalMenuGroups: MenuGroup[] = [
     icon: Activity,
     items: [
       { label: "Tổng quan BGH", href: "/admin/dashboard", icon: LayoutDashboard },
+      { label: "Giám sát KPI Điểm Trường", href: "/admin/kpi/principal-dashboard", icon: Target, badge: "KPI" },
+      { label: "Bảng vàng Thi đua Nề nếp", href: "/admin/emulation", icon: Trophy, badge: "Thi Đua" },
       { label: "Điểm thi & Hành trình OLS", href: "/admin/exam-analytics", icon: BarChart2, badge: "AI OLS" },
       { label: "Radar cảnh báo", href: "/admin/early-warnings", icon: AlertCircle },
       { label: "Báo cáo ngày", href: "/admin/daily-reports", icon: FileText },
@@ -196,6 +202,8 @@ const principalMenuGroups: MenuGroup[] = [
     icon: ShieldCheck,
     items: [
       { label: "Duyệt yêu cầu BGH", href: "/admin/approvals", icon: CheckSquare },
+      { label: "Danh mục & Phê duyệt KPI", href: "/admin/kpi", icon: ClipboardList },
+      { label: "Chiến lược & Mục tiêu KPI", href: "/admin/strategy", icon: Target },
       { label: "Khóa sổ dữ liệu", href: "/admin/data-lock", icon: ShieldCheck },
       { label: "Duyệt học bạ", href: "/admin/transcripts", icon: FileSpreadsheet },
       { label: "Cơ sở & Phân hiệu", href: "/admin/campuses", icon: Building2 },
@@ -258,7 +266,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
     session?.user?.email === "superadmin.ninhbinh@gmail.com" ||
     session?.user?.email === "superadmin.demo@gmail.com" ||
     session?.user?.email === "superadmin@school.com" ||
-    session?.user?.email?.includes("superadmin") ||
+    session?.user?.email === "superadmin@school.edu.vn" ||
     (session?.user as { role?: string })?.role === "SUPER_ADMIN" ||
     (session?.user as { role?: string })?.role === "DEPARTMENT_ADMIN";
 

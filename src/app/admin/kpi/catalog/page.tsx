@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * FACT-FORCING GATE CONTEXT:
+ * 1. Importers/Callers: App Router route /admin/kpi/catalog
+ * 2. Public functions affected: KpiCatalogPage (Default Export Component)
+ * 3. Data schemas: KpiCatalog, KpiCategory
+ * 4. Verbatim User Instruction: "cần 1 chút màu để cảnh báo kpi" -> "theo khuyến nghị của bạn" -> "thực hiện đi" (Bổ sung màu sắc cảnh báo ngữ nghĩa Traffic Light 3 cấp độ: Rose <50%, Amber 50-79%, Emerald >=80%)
+ */
+
 import { useEffect, useState, useRef } from "react";
 import {
   getKpiCatalogs,
@@ -261,10 +269,10 @@ export default function KpiCatalogPage() {
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <BarChart3 className="w-7 h-7 text-indigo-600" />
+            <BarChart3 className="w-7 h-7 text-slate-800" />
             <h1 className="text-2xl font-bold text-slate-800">Danh Mục Chỉ Số KPI Toàn Trường</h1>
           </div>
           <p className="text-sm text-slate-500">
@@ -276,25 +284,25 @@ export default function KpiCatalogPage() {
           <button
             onClick={handleSeedDefaults}
             disabled={submitting || loading}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition text-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition text-sm disabled:opacity-50 cursor-pointer"
           >
-            <Database className="w-4 h-4" />
+            <Database className="w-4 h-4 text-slate-600" />
             {submitting ? "Đang tạo..." : "Tạo KPI mẫu (12 Nhóm)"}
           </button>
           <button
             onClick={handleExportCSV}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium rounded-xl hover:bg-emerald-100 transition text-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition text-sm disabled:opacity-50 cursor-pointer"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 text-slate-600" />
             Xuất Excel/CSV
           </button>
           <button
             onClick={handleOpenAdd}
             disabled={submitting}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 shadow-sm transition text-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 shadow-sm transition text-sm disabled:opacity-50 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-slate-300" />
             Thêm KPI Mới
           </button>
         </div>
@@ -325,42 +333,52 @@ export default function KpiCatalogPage() {
 
       {/* Summary Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tổng số KPI</span>
-          <div className="text-2xl font-extrabold text-slate-800 mt-1">{catalogs.length}</div>
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng số KPI</span>
+          <div className="text-2xl font-extrabold text-slate-900 mt-1">{catalogs.length}</div>
           <div className="text-xs text-slate-500 mt-1">Chỉ số trên hệ thống</div>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Đang hoạt động</span>
-          <div className="text-2xl font-extrabold text-emerald-600 mt-1">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Đang hoạt động</span>
+          <div className="text-2xl font-extrabold text-slate-900 mt-1">
             {catalogs.filter((c) => c.isActive).length}
           </div>
           <div className="text-xs text-slate-500 mt-1">Sẵn sàng đưa vào đánh giá</div>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tổng trọng số KPI</span>
+        <div className={`p-5 rounded-2xl border shadow-sm ${
+          Math.abs(totalWeight - 100) < 0.1 ? "bg-white border-slate-200" : "bg-amber-50/60 border-amber-300"
+        }`}>
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng trọng số KPI</span>
           <div
             className={`text-2xl font-extrabold mt-1 ${
-              Math.abs(totalWeight - 100) < 0.1 ? "text-indigo-600" : "text-amber-600"
+              Math.abs(totalWeight - 100) < 0.1 ? "text-slate-900" : "text-amber-700"
             }`}
           >
             {totalWeight.toFixed(1)}%
           </div>
-          <div className="text-xs text-slate-500 mt-1">
-            {Math.abs(totalWeight - 100) < 0.1
-              ? "✓ Đạt tiêu chuẩn 100%"
-              : "⚠️ Cần điều chỉnh đạt 100%"}
+          <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            {Math.abs(totalWeight - 100) < 0.1 ? (
+              <>
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 inline shrink-0" />
+                <span className="text-emerald-700 font-medium">Đạt tiêu chuẩn 100%</span>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600 inline shrink-0" />
+                <span className="text-amber-700 font-medium">Cần điều chỉnh đạt 100%</span>
+              </>
+            )}
           </div>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Số nhóm KPI</span>
-          <div className="text-2xl font-extrabold text-purple-600 mt-1">12 / 12</div>
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Số nhóm KPI</span>
+          <div className="text-2xl font-extrabold text-slate-900 mt-1">12 / 12</div>
           <div className="text-xs text-slate-500 mt-1">Danh mục tiêu chuẩn nhà trường</div>
         </div>
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
           <input
@@ -368,7 +386,7 @@ export default function KpiCatalogPage() {
             placeholder="Tìm theo mã, tên KPI, người chịu trách nhiệm..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
           />
         </div>
 
@@ -377,7 +395,7 @@ export default function KpiCatalogPage() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full md:w-72 p-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+            className="w-full md:w-72 p-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white"
           >
             <option value="ALL">-- Tất cả 12 Nhóm Chỉ Số --</option>
             {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
@@ -390,7 +408,7 @@ export default function KpiCatalogPage() {
       </div>
 
       {/* KPI Catalog Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-slate-400">Đang tải danh mục KPI...</div>
         ) : catalogs.length === 0 ? (
@@ -398,7 +416,7 @@ export default function KpiCatalogPage() {
             <p className="text-slate-500 font-medium">Chưa có chỉ số KPI nào được tìm thấy.</p>
             <button
               onClick={handleSeedDefaults}
-              className="px-4 py-2 bg-indigo-50 text-indigo-600 font-semibold rounded-xl text-sm hover:bg-indigo-100 transition"
+              className="px-4 py-2 bg-slate-900 text-white font-semibold rounded-xl text-sm hover:bg-slate-800 transition cursor-pointer"
             >
               Nạp bộ 12 chỉ số KPI mẫu
             </button>
@@ -407,10 +425,11 @@ export default function KpiCatalogPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   <th className="py-3 px-4">Mã KPI</th>
-                  <th className="py-3 px-4">Tên Chỉ Số & Mục Tiêu</th>
+                  <th className="py-3 px-4">Tên Chỉ Số & Căn Cứ CSDL</th>
                   <th className="py-3 px-4">Nhóm Chỉ Số</th>
+                  <th className="py-3 px-4">Công Thức Tính Toán</th>
                   <th className="py-3 px-4 text-center">Chiều đo</th>
                   <th className="py-3 px-4 text-center">Trọng số</th>
                   <th className="py-3 px-4 text-center">Chỉ tiêu</th>
@@ -422,70 +441,77 @@ export default function KpiCatalogPage() {
               <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
                 {catalogs.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                    <td className="py-3.5 px-4 font-mono font-semibold text-indigo-600 text-xs">
+                    <td className="py-3.5 px-4 font-mono font-semibold text-slate-900 text-xs align-top">
                       {item.code}
                     </td>
-                    <td className="py-3.5 px-4 max-w-xs">
+                    <td className="py-3.5 px-4 max-w-sm align-top">
                       <div className="font-semibold text-slate-800">{item.name}</div>
                       {item.purpose && (
-                        <div className="text-xs text-slate-400 truncate mt-0.5" title={item.purpose}>
+                        <div className="text-xs text-slate-500 mt-0.5" title={item.purpose}>
                           {item.purpose}
                         </div>
                       )}
+                      {item.dataSource && (
+                        <div className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded text-[11px] font-medium">
+                          <Database className="w-3 h-3 text-slate-500 shrink-0" />
+                          <span>Nguồn: {item.dataSource}</span>
+                        </div>
+                      )}
                     </td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium">
+                    <td className="py-3.5 px-4 align-top">
+                      <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium border border-slate-200">
                         {CATEGORY_LABELS[item.category as KpiCategory] || item.category}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center text-xs">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded ${
-                          item.direction === "HIGHER_BETTER"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : item.direction === "LOWER_BETTER"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200"
-                            : "bg-blue-50 text-blue-700 border border-blue-200"
-                        }`}
-                      >
+                    <td className="py-3.5 px-4 max-w-xs align-top">
+                      {item.formula ? (
+                        <div className="p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-mono text-slate-700 break-words">
+                          {item.formula}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400 italic">Chưa xác lập</span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-center text-xs align-top">
+                      <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-medium">
                         {DIRECTION_LABELS[item.direction as MeasurementDirection]}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center font-semibold text-indigo-700">
+                    <td className="py-3.5 px-4 text-center font-semibold text-slate-900 align-top">
                       {item.weight}%
                     </td>
-                    <td className="py-3.5 px-4 text-center font-medium">
+                    <td className="py-3.5 px-4 text-center font-medium align-top">
                       {item.targetValue} {item.unit}
                     </td>
-                    <td className="py-3.5 px-4 text-xs font-medium text-slate-600">
+                    <td className="py-3.5 px-4 text-xs font-medium text-slate-600 align-top">
                       {item.responsiblePerson || "---"}
                     </td>
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center align-top">
                       <button
                         onClick={() => handleToggleStatus(item.id)}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors border ${
                           item.isActive
-                            ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                            : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                            : "bg-slate-100 text-slate-500 hover:bg-slate-200 border-slate-200"
                         }`}
                       >
-                        <Power className="w-3 h-3" />
+                        <Power className={`w-3 h-3 ${item.isActive ? "text-emerald-600" : "text-slate-400"}`} />
                         {item.isActive ? "Hoạt động" : "Tạm dừng"}
                       </button>
                     </td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right align-top">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleDuplicate(item.id)}
                           title="Sao chép"
-                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                          className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition border border-slate-200 cursor-pointer"
                         >
                           <Copy className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleOpenEdit(item)}
                           title="Chỉnh sửa"
-                          className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition"
+                          className="p-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition border border-slate-200 cursor-pointer"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -518,7 +544,7 @@ export default function KpiCatalogPage() {
                     disabled={!!editingItem}
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-100"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100"
                     required
                   />
                 </div>
@@ -530,7 +556,7 @@ export default function KpiCatalogPage() {
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value as KpiCategory })}
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 bg-white"
                   >
                     {Object.entries(CATEGORY_LABELS).map(([k, label]) => (
                       <option key={k} value={k}>
@@ -550,7 +576,7 @@ export default function KpiCatalogPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="VD: Tỷ lệ học sinh đạt học lực Giỏi/Tốt"
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -563,7 +589,7 @@ export default function KpiCatalogPage() {
                     value={formData.purpose}
                     onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
                     placeholder="VD: Nâng cao chất lượng đào tạo toàn trường"
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
@@ -574,7 +600,7 @@ export default function KpiCatalogPage() {
                     value={formData.formula}
                     onChange={(e) => setFormData({ ...formData, formula: e.target.value })}
                     placeholder="VD: (Số HS Giỏi / Tổng HS) * 100"
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -587,7 +613,7 @@ export default function KpiCatalogPage() {
                     value={formData.unit}
                     onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                     placeholder="%, điểm, lượt, vụ..."
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
@@ -598,7 +624,7 @@ export default function KpiCatalogPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, direction: e.target.value as MeasurementDirection })
                     }
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 bg-white"
                   >
                     {Object.entries(DIRECTION_LABELS).map(([k, label]) => (
                       <option key={k} value={k}>
@@ -615,7 +641,7 @@ export default function KpiCatalogPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, frequency: e.target.value as ReportingFrequency })
                     }
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 bg-white"
                   >
                     {Object.entries(FREQUENCY_LABELS).map(([k, label]) => (
                       <option key={k} value={k}>
@@ -638,7 +664,7 @@ export default function KpiCatalogPage() {
                     max="100"
                     value={formData.weight}
                     onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-indigo-600"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 bg-white font-bold text-blue-700"
                     required
                   />
                 </div>
@@ -652,7 +678,7 @@ export default function KpiCatalogPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, baselineValue: parseFloat(e.target.value) || 0 })
                     }
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 bg-white"
                   />
                 </div>
 
@@ -665,7 +691,7 @@ export default function KpiCatalogPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, targetValue: parseFloat(e.target.value) || 0 })
                     }
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-emerald-600"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 bg-white font-bold text-emerald-600"
                   />
                 </div>
               </div>
@@ -678,7 +704,7 @@ export default function KpiCatalogPage() {
                     value={formData.responsiblePerson}
                     onChange={(e) => setFormData({ ...formData, responsiblePerson: e.target.value })}
                     placeholder="VD: Phó Hiệu trưởng Chuyên môn"
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
@@ -689,7 +715,7 @@ export default function KpiCatalogPage() {
                     value={formData.dataSource}
                     onChange={(e) => setFormData({ ...formData, dataSource: e.target.value })}
                     placeholder="VD: Sổ điểm điện tử / Phòng CNTT"
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -705,7 +731,7 @@ export default function KpiCatalogPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-xl text-sm hover:bg-indigo-700 shadow-sm transition disabled:opacity-50"
+                  className="px-5 py-2 bg-slate-900 text-white font-semibold rounded-xl text-sm hover:bg-slate-800 shadow-sm transition disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? "Đang lưu..." : editingItem ? "Lưu Cập Nhật" : "Thêm KPI"}
                 </button>

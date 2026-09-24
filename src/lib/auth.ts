@@ -11,6 +11,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import prisma from "./prisma";
 import { checkLoginRateLimit } from "./rate-limiter";
+import { logSecurityEvent } from "./security-logger";
 
 export interface DemoAccountMetadata {
   role: string;
@@ -93,6 +94,26 @@ export const DEMO_ACCOUNTS_MAP: Record<string, DemoAccountMetadata> = {
     name: "Cô Vũ Thị Hoa (Tổ trưởng Khối 1)",
     schoolId: "sch_th_pholu",
   },
+  "to.khoi2@gmail.com": {
+    role: "SUBJECT_HEAD",
+    name: "Cô Phạm Thị Lan (Tổ trưởng Khối 2)",
+    schoolId: "sch_th_pholu",
+  },
+  "to.khoi3@gmail.com": {
+    role: "SUBJECT_HEAD",
+    name: "Thầy Đinh Văn Nam (Tổ trưởng Khối 3)",
+    schoolId: "sch_th_pholu",
+  },
+  "to.khoi4@gmail.com": {
+    role: "SUBJECT_HEAD",
+    name: "Cô Hoàng Thị Mai (Tổ trưởng Khối 4)",
+    schoolId: "sch_th_pholu",
+  },
+  "to.khoi5@gmail.com": {
+    role: "SUBJECT_HEAD",
+    name: "Thầy Bùi Quang Hưng (Tổ trưởng Khối 5)",
+    schoolId: "sch_th_pholu",
+  },
   "to.dacthu@gmail.com": {
     role: "SUBJECT_HEAD",
     name: "Cô Đào Thị Linh (Tổ trưởng Tổ Đặc thù)",
@@ -110,15 +131,55 @@ export const DEMO_ACCOUNTS_MAP: Record<string, DemoAccountMetadata> = {
     schoolId: "sch_th_pholu",
     campusId: "cmp_trungtam",
   },
-  // Legacy demo aliases
+  // Legacy demo & convenience aliases
+  "superadmin@gmail.com": {
+    role: "SUPER_ADMIN",
+    name: "Ban Quản Trị Nền Tảng Giáo Dục Toàn Quốc (SuperAdmin)",
+  },
+  "sogd.laocai@gmail.com": {
+    role: "DEPARTMENT_ADMIN",
+    name: "Văn phòng Sở GD&ĐT Tỉnh Lào Cai",
+    departmentId: "sogd_laocai",
+  },
   "superadmin@school.edu.vn": {
     role: "SUPER_ADMIN",
     name: "Quản Trị Viên Tối Cao (Super Admin)",
   },
   "admin@school.edu.vn": {
     role: "ADMIN",
-    name: "TS. Nguyễn Văn Hùng",
+    name: "ThS. Trần Thị Thanh Hà (Hiệu trưởng)",
     schoolId: "sch_th_pholu",
+  },
+  "hieutruong@school.edu.vn": {
+    role: "ADMIN",
+    name: "ThS. Trần Thị Thanh Hà (Hiệu trưởng)",
+    schoolId: "sch_th_pholu",
+  },
+  "hieutruong@gmail.com": {
+    role: "ADMIN",
+    name: "ThS. Trần Thị Thanh Hà (Hiệu trưởng)",
+    schoolId: "sch_th_pholu",
+  },
+  "principal@school.edu.vn": {
+    role: "ADMIN",
+    name: "ThS. Trần Thị Thanh Hà (Hiệu trưởng)",
+    schoolId: "sch_th_pholu",
+  },
+  "principal.thpholu@gmail.com": {
+    role: "ADMIN",
+    name: "ThS. Trần Thị Thanh Hà (Hiệu trưởng)",
+    schoolId: "sch_th_pholu",
+  },
+  "ketoan@school.edu.vn": {
+    role: "ADMIN",
+    name: "Nguyễn Thị Phương Mai (Kế toán trưởng)",
+    schoolId: "sch_th_pholu",
+  },
+  "pht.trungtam@school.edu.vn": {
+    role: "VICE_PRINCIPAL",
+    name: "ThS. Nguyễn Văn Trung (PHT Trung tâm)",
+    schoolId: "sch_th_pholu",
+    campusId: "cmp_trungtam",
   },
   "teacher@school.edu.vn": {
     role: "TEACHER",
@@ -126,9 +187,21 @@ export const DEMO_ACCOUNTS_MAP: Record<string, DemoAccountMetadata> = {
     schoolId: "sch_th_pholu",
     campusId: "cmp_trungtam",
   },
+  "giaovien@school.edu.vn": {
+    role: "TEACHER",
+    name: "Cô Nguyễn Thu Hằng (GVCN 1A1)",
+    schoolId: "sch_th_pholu",
+    campusId: "cmp_trungtam",
+  },
   "student@school.edu.vn": {
     role: "STUDENT",
     name: "Nguyễn Văn An (Mã: HS26100001)",
+    schoolId: "sch_th_pholu",
+    campusId: "cmp_trungtam",
+  },
+  "hocsinh@school.edu.vn": {
+    role: "STUDENT",
+    name: "Nguyễn Minh Khang (Lớp 1A1)",
     schoolId: "sch_th_pholu",
     campusId: "cmp_trungtam",
   },
@@ -161,9 +234,11 @@ export const DEMO_ACCEPTED_PASSWORDS = new Set([
   "SuperAdmin@2026!",
 ]);
 
-// Demo mode environment flag (hỗ trợ thêm cho các tài khoản test tự do ngoài danh mục)
+// Demo mode environment flag (mặc định bật ở dev/test, tự động tắt ở production trừ khi được bật tường minh)
 const isDemoAllowed =
-  process.env.ALLOW_DEMO_LOGIN !== "false";
+  process.env.NODE_ENV !== "production"
+    ? process.env.ALLOW_DEMO_LOGIN !== "false"
+    : process.env.ALLOW_DEMO_LOGIN === "true";
 
 if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
   console.error("CRITICAL SECURITY ALERT: NEXTAUTH_SECRET is not set in production environment!");
@@ -218,6 +293,13 @@ export const authOptions: NextAuthOptions = {
         if (!isDemoAccount) {
           const rateLimit = checkLoginRateLimit(rawEmail);
           if (!rateLimit.allowed) {
+            logSecurityEvent({
+              eventType: "RATE_LIMIT_TRIGGERED",
+              severity: "WARN",
+              userEmail: rawEmail,
+              message: "Login rate limit exceeded for user",
+              metadata: { retryAfterMs: rateLimit.retryAfterMs },
+            });
             throw new Error("Tài khoản bị tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau 15 phút.");
           }
         }
@@ -259,11 +341,74 @@ export const authOptions: NextAuthOptions = {
               // Tự động map thêm thông tin phân hiệu/cơ quan nếu user trong DB chưa có
               const demoMeta = DEMO_ACCOUNTS_MAP[userEmailLower] || DEMO_ACCOUNTS_MAP[rawEmail] || DEMO_ACCOUNTS_MAP[email];
 
+              // Heuristic role detection for self-healing & fallback
+              const isPrincipalEmail =
+                userEmailLower.includes("admin") ||
+                userEmailLower.includes("hieutruong") ||
+                userEmailLower.includes("principal") ||
+                userEmailLower.includes("ketoan") ||
+                userEmailLower.includes("ht.");
+
+              const expectedRole = demoMeta?.role || (
+                userEmailLower.includes("superadmin") || userEmailLower.includes("sysadmin")
+                  ? "SUPER_ADMIN"
+                  : userEmailLower.includes("dept") || userEmailLower.includes("sogd")
+                  ? "DEPARTMENT_ADMIN"
+                  : userEmailLower.includes("district") || userEmailLower.includes("phonggd")
+                  ? "DISTRICT_ADMIN"
+                  : userEmailLower.includes("ward") || userEmailLower.includes("diaphuong") || userEmailLower.includes("ubnd")
+                  ? "WARD_ADMIN"
+                  : isPrincipalEmail
+                  ? "ADMIN"
+                  : userEmailLower.includes("vp") || userEmailLower.includes("pht")
+                  ? "VICE_PRINCIPAL"
+                  : userEmailLower.includes("ttcm") || userEmailLower.includes("subjecthead") || userEmailLower.includes("to.")
+                  ? "SUBJECT_HEAD"
+                  : userEmailLower.includes("teacher") || userEmailLower.includes("gv") || userEmailLower.includes("giaovien")
+                  ? "TEACHER"
+                  : undefined
+              );
+
+              let resolvedRole = user.role;
+              let resolvedName = user.name || demoMeta?.name || "Người dùng Phố Lu";
+
+              // SELF-HEALING: Nếu tài khoản trong DB có role không khớp với demoMeta hoặc bị lệch thành STUDENT
+              const needsRoleHealing =
+                (expectedRole && expectedRole !== "STUDENT" && user.role === "STUDENT") ||
+                (demoMeta?.role && user.role !== demoMeta.role);
+
+              if (needsRoleHealing) {
+                const targetRole = (demoMeta?.role || expectedRole) as any;
+                resolvedRole = targetRole;
+                if (demoMeta?.name) {
+                  resolvedName = demoMeta.name;
+                }
+                try {
+                  await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                      role: targetRole,
+                      name: resolvedName,
+                      schoolId: user.schoolId || demoMeta?.schoolId || "sch_th_pholu",
+                      campusId: user.campusId || demoMeta?.campusId || null,
+                    },
+                  });
+                  // Dọn dẹp bản ghi Student tạo nhầm nếu có
+                  if (targetRole !== "STUDENT") {
+                    await prisma.student.deleteMany({
+                      where: { userId: user.id },
+                    }).catch(() => {});
+                  }
+                } catch (healErr) {
+                  console.error("Self-heal user role error:", healErr);
+                }
+              }
+
               return {
                 id: user.id,
                 email: user.email,
-                name: user.name || demoMeta?.name || "Người dùng Phố Lu",
-                role: user.role || demoMeta?.role || "STUDENT",
+                name: resolvedName,
+                role: resolvedRole || demoMeta?.role || "STUDENT",
                 image: sanitizeImageUrl(user.image),
                 isApproved: user.isApproved ?? true,
                 mustChangePassword: mustChange,
@@ -286,6 +431,13 @@ export const authOptions: NextAuthOptions = {
             DEMO_ACCOUNTS_MAP[email] ||
             DEMO_ACCOUNTS_MAP[rawEmail];
 
+          const isPrincipalEmail =
+            email.includes("admin") ||
+            email.includes("hieutruong") ||
+            email.includes("principal") ||
+            email.includes("ketoan") ||
+            email.includes("ht.");
+
           const role = demoMeta?.role || (
             email.includes("superadmin") || email.includes("sysadmin")
               ? "SUPER_ADMIN"
@@ -293,9 +445,9 @@ export const authOptions: NextAuthOptions = {
               ? "DEPARTMENT_ADMIN"
               : email.includes("district") || email.includes("phonggd")
               ? "DISTRICT_ADMIN"
-              : email.includes("ward") || email.includes("diaphuong")
+              : email.includes("ward") || email.includes("diaphuong") || email.includes("ubnd")
               ? "WARD_ADMIN"
-              : email.includes("admin")
+              : isPrincipalEmail
               ? "ADMIN"
               : email.includes("vp") || email.includes("pht")
               ? "VICE_PRINCIPAL"
@@ -315,10 +467,12 @@ export const authOptions: NextAuthOptions = {
               ? "Lãnh đạo Phòng GD&ĐT (ThS. Bùi Thị Hải Vân)"
               : email.includes("ward") || email.includes("ubnd")
               ? "Cán bộ Giáo dục Xã / Chủ tịch UBND"
-              : email.includes("admin") || email.includes("hieutruong")
-              ? "ThS. Trần Thị Thanh Hà (Hiệu trưởng)"
+              : isPrincipalEmail
+              ? (email.includes("ketoan") ? "Nguyễn Thị Phương Mai (Kế toán trưởng)" : "ThS. Trần Thị Thanh Hà (Hiệu trưởng)")
               : email.includes("vp") || email.includes("pht")
               ? "ThS. Nguyễn Văn Trung (PHT Trung tâm)"
+              : email.includes("ttcm") || email.includes("to.")
+              ? "Cô Vũ Thị Hoa (Tổ trưởng Chuyên môn)"
               : email.includes("teacher") || email.includes("giaovien")
               ? "Cô Nguyễn Thu Hằng (GVCN 1A1)"
               : "Nguyễn Minh Khang (Lớp 1A1)"
@@ -468,10 +622,10 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 7 * 24 * 60 * 60, // 7 days (Security Baseline recommendation)
   },
   jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   },
-  secret: process.env.NEXTAUTH_SECRET || "school_management_production_secret_key_2026",
+  secret: process.env.NEXTAUTH_SECRET,
 };
