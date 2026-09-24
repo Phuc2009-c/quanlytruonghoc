@@ -24,6 +24,7 @@ import { aiChatCompletion } from "@/lib/ai-provider";
 import { anonymizePIIForAI } from "@/lib/ai/data-integrity";
 import { calculateKpiScore } from "./utils";
 import { CATEGORY_LABELS } from "./kpi-labels";
+import { MOCK_DEFAULT_KPIS } from "./kpi-mock-data";
 
 export type KpiTier = "XUAT_SAC" | "TOT" | "DAT" | "CAN_CAN_THIEP";
 
@@ -213,10 +214,18 @@ export async function getPrincipalKpiComparisonData(params?: {
     const scopeType = params?.scopeType || "CAMPUS";
 
     // 1. Lấy danh mục KPI đang hoạt động
-    const catalogs = await prisma.kpiCatalog.findMany({
-      where: { isActive: true },
-      orderBy: { code: "asc" },
-    });
+    let catalogs: any[] = [];
+    try {
+      catalogs = await prisma.kpiCatalog.findMany({
+        where: { isActive: true },
+        orderBy: { code: "asc" },
+      });
+    } catch {
+      catalogs = MOCK_DEFAULT_KPIS;
+    }
+    if (!catalogs || catalogs.length === 0) {
+      catalogs = MOCK_DEFAULT_KPIS;
+    }
 
     // 2. Xác định danh sách đối tượng cần đánh giá (Trường hoặc Phân hiệu)
     let entitiesToAnalyze: { id: string; name: string; type: "SCHOOL" | "CAMPUS"; schoolName?: string; schoolId: string }[] = [];

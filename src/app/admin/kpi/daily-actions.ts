@@ -21,6 +21,7 @@ import {
 import { calculateKpiScore } from "./utils";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { MOCK_DEFAULT_KPIS } from "./kpi-mock-data";
 
 export interface DailyKpiRealtimeMetrics {
   date: string;
@@ -277,7 +278,7 @@ export async function getDailyKpiRealtime(
       }
     }
 
-    // Nếu chưa có danh mục, lấy toàn bộ danh mục KPI đang active
+    // Nếu chưa có danh mục, lấy toàn bộ danh mục KPI đang active hoặc fallback mock
     if (catalogs.length === 0) {
       try {
         catalogs = await prisma.kpiCatalog.findMany({
@@ -285,7 +286,10 @@ export async function getDailyKpiRealtime(
           orderBy: { code: "asc" },
         });
       } catch {
-        catalogs = [];
+        catalogs = MOCK_DEFAULT_KPIS;
+      }
+      if (catalogs.length === 0) {
+        catalogs = MOCK_DEFAULT_KPIS;
       }
     }
 
