@@ -8,6 +8,7 @@
 
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import { AUTH_SECRET_DEFAULT } from "./lib/auth-constants";
 
 export default withAuth(
   function middleware(req) {
@@ -81,7 +82,7 @@ export default withAuth(
     callbacks: {
       authorized: ({ token }) => Boolean(token),
     },
-    secret: process.env.NEXTAUTH_SECRET || "school_management_production_secret_key_2026",
+    secret: process.env.NEXTAUTH_SECRET || AUTH_SECRET_DEFAULT,
   }
 );
 

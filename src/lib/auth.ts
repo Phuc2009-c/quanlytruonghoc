@@ -13,6 +13,8 @@ import prisma from "./prisma";
 import { checkLoginRateLimit } from "./rate-limiter";
 import { logSecurityEvent } from "./security-logger";
 
+import { AUTH_SECRET_DEFAULT } from "./auth-constants";
+
 export interface DemoAccountMetadata {
   role: string;
   name: string;
@@ -240,7 +242,7 @@ const isDemoAllowed = process.env.ALLOW_DEMO_LOGIN !== "false";
 export const authSecret =
   process.env.NEXTAUTH_SECRET ||
   process.env.AUTH_SECRET ||
-  "school_management_production_secret_key_2026_super_secure_fallback";
+  AUTH_SECRET_DEFAULT;
 
 if (!process.env.NEXTAUTH_SECRET) {
   process.env.NEXTAUTH_SECRET = authSecret;
