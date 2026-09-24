@@ -57,6 +57,15 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  env: {
+    // Ensure NEXTAUTH_URL is always defined during build/prerender to prevent
+    // next-auth from calling `new URL("")` which crashes static page generation.
+    NEXTAUTH_URL:
+      process.env.NEXTAUTH_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000"),
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "25mb",
